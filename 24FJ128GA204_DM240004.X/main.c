@@ -1,4 +1,6 @@
 /*
+ * https://github.com/dsoze1138/24FJ128GA204_DM240004
+ *
  * File:   main.c
  * Author: dan1138
  * Target: PIC24FJ128GA204
@@ -16,8 +18,8 @@
  *     S1  <>  5 : RC9/RP25       :     GND -> 16 : AVSS         :          <> 27 : RC2/RP18  :    RGB_R <> 38 : RC5/RP21     :
  *    GND  <>  6 : DISVREG        :     3v3 -> 17 : AVDD         :      3v3 -> 28 : VDD       :      GND -> 39 : VSS          :
  *   10uF  ->  7 : VCAP           : ICD_VPP -> 18 : MCLR         :      GND -> 29 : VSS       :      3v3 -> 40 : VDD          :
- *    PGD  <>  8 : RB10/RP11/PGD2 :         <> 19 : RA0/AN0      :          <> 30 : RA2/OSCI  :          <> 41 : RB5/RP5/PGD3 :
- *    PGC  <>  9 : RB11/RP11/PGC2 :         <> 20 : RA1/AN1      :          <> 31 : RA3/OSCO  :          <> 42 : RB6/RP6/PGC3 :
+ *         <>  8 : RB10/RP11/PGD2 :         <> 19 : RA0/AN0      :          <> 30 : RA2/OSCI  :          <> 41 : RB5/RP5/PGD3 :
+ *         <>  9 : RB11/RP11/PGC2 :         <> 20 : RA1/AN1      :          <> 31 : RA3/OSCO  :          <> 42 : RB6/RP6/PGC3 :
  *         <> 10 : RB12/RP12      : ICD_PGD <> 21 : RB0/RP0/PGD1 :          <> 32 : RA8       :          <> 43 : RB7/RP7      :
  *         <> 11 : RB13/RP13      : ICD_PGC <> 22 : RB1/RP1/PGC1 : X2-32KHZ <> 33 : RB4/SOSCI :          <> 44 : RB8/RP8      :
  *               +----------------+               +--------------+                +-----------+                +--------------+
