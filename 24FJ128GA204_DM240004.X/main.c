@@ -12,15 +12,15 @@
  *                                                           PIC24FJ128GA204
  *               +----------------+               +--------------+                +-----------+                +--------------+
  *         <>  1 : RB9/RP9        :    LED2 <> 12 : RA10         :          <> 23 : RB2/RP2   : X2-32KHZ <> 34 : RA4/SOSCO    :
- *  RGB_G  <>  2 : RC6/RP22       :         <> 13 : RA7          :          <> 24 : RB3/RP3   :     LED1 <> 35 : RA9          :
- *  RGB_B  <>  3 : RC7/RP23       :         <> 14 : RB14/RP14    :      POT <> 25 : RC0/RP16  :          <> 36 : RC3/RP19     :
+ *  RGB_G  <>  2 : RC6/RP22       :  LCD_RS <> 13 : RA7          :          <> 24 : RB3/RP3   :     LED1 <> 35 : RA9          :
+ *  RGB_B  <>  3 : RC7/RP23       :  LCD_RW <> 14 : RB14/RP14    :      POT <> 25 : RC0/RP16  :          <> 36 : RC3/RP19     :
  *     S2  <>  4 : RC8/RP24       :         <> 15 : RB15/RP15    :          <> 26 : RC1/RP17  :          <> 37 : RC4/RP20     :
  *     S1  <>  5 : RC9/RP25       :     GND -> 16 : AVSS         :          <> 27 : RC2/RP18  :    RGB_R <> 38 : RC5/RP21     :
- *    GND  <>  6 : DISVREG        :     3v3 -> 17 : AVDD         :      3v3 -> 28 : VDD       :      GND -> 39 : VSS          :
+ *    3v3  <>  6 : VBAT           :     3v3 -> 17 : AVDD         :      3v3 -> 28 : VDD       :      GND -> 39 : VSS          :
  *   10uF  ->  7 : VCAP           : ICD_VPP -> 18 : MCLR         :      GND -> 29 : VSS       :      3v3 -> 40 : VDD          :
- *         <>  8 : RB10/RP11/PGD2 :         <> 19 : RA0/AN0      :          <> 30 : RA2/OSCI  :          <> 41 : RB5/RP5/PGD3 :
- *         <>  9 : RB11/RP11/PGC2 :         <> 20 : RA1/AN1      :          <> 31 : RA3/OSCO  :          <> 42 : RB6/RP6/PGC3 :
- *         <> 10 : RB12/RP12      : ICD_PGD <> 21 : RB0/RP0/PGD1 :          <> 32 : RA8       :          <> 43 : RB7/RP7      :
+ *         <>  8 : RB10/RP11/PGD2 :  LCD_D4 <> 19 : RA0/AN0      :   LCD_D6 <> 30 : RA2/OSCI  :          <> 41 : RB5/RP5/PGD3 :
+ *         <>  9 : RB11/RP11/PGC2 :  LCD_D5 <> 20 : RA1/AN1      :   LCD_D7 <> 31 : RA3/OSCO  :          <> 42 : RB6/RP6/PGC3 :
+ *         <> 10 : RB12/RP12      : ICD_PGD <> 21 : RB0/RP0/PGD1 :   LCD_E  <> 32 : RA8       :          <> 43 : RB7/RP7      :
  *         <> 11 : RB13/RP13      : ICD_PGC <> 22 : RB1/RP1/PGC1 : X2-32KHZ <> 33 : RB4/SOSCI :          <> 44 : RB8/RP8      :
  *               +----------------+               +--------------+                +-----------+                +--------------+
  *                                                              TQFP-44
@@ -32,6 +32,7 @@
  * Setup the system oscillator for 32MHz using the internal FRC and the 4x PLL.
  * Turn on the 32.768KHz secondary oscillator.
  * Flash LED1 on for 500 milliseconds then off for 500 milliseconds.
+ * Add 4-bit parallel HD44780 interface for LCD character module.
  */
 // CONFIG4
 #pragma config DSWDTPS = DSWDTPS1F      // Deep Sleep Watchdog Timer Postscale Select bits (1:68719476736 (25.7 Days))
@@ -87,6 +88,10 @@
  * Standard header files
  */
 #include <stdint.h>
+/*
+ * Local header files
+ */
+#include "lcd.h"
 /*
  * Initialize this PIC
  */
@@ -155,23 +160,50 @@ void PIC_Init(void)
     
     /* Turn on Secondary Oscillation Amplifier */
     __builtin_write_OSCCONL(OSCCON | (1 << _OSCCON_SOSCEN_POSITION));
+    
+    /* Turn off all analog inputs */
+    ANSA = 0;
+    ANSB = 0;
+    ANSC = 0;
+}
+/*
+ * WARNING: Not a portable function.
+ *          Maximum delay 16384 instruction cycles.
+ *          At 16 MIPS this is 1024 microseconds.
+ *
+ *          Minimum  1MHz instruction cycle clock.
+ */
+void delay_us(unsigned short delay)
+{
+    if ((delay * (FCY/1000000ul) > 16383ul))
+    {
+        asm("   repeat  #16383\n"
+            "   clrwdt        \n"
+            ::);
 
+    }
+    else
+    {
+        asm("   repeat  %0    \n"
+            "   clrwdt        \n"
+        :: "r" (delay*(FCY/1000000ul)));
+    }
 }
 /*
  * WARNING: Not a portable function.
  *          Maximum 16MHz instruction cycle clock.
  *          Minimum  8Khz instruction cycle clock.
  */
-void delay_ms(uint32_t delay)
+void delay_ms(unsigned long delay)
 {
     if(delay--)
     {
-        asm("1: repeat  %0  \n"
-            "   clrwdt      \n"
-            "   sub  %1,#1  \n"
-            "   subb %d1,#0 \n"
-            "   bra  c,1b   \n"
-        :: "r" (FCY/1000L-6L), "C" (delay));
+        asm("1: repeat  %0    \n"
+            "   clrwdt        \n"
+            "   sub  %1,#1    \n"
+            "   subb %d1,#0   \n"
+            "   bra  c,1b     \n"
+        :: "r" (FCY/1000ul-6ul), "C" (delay));
     }
 }
 /*
@@ -183,6 +215,10 @@ int main(void)
      * Application initialization
      */
     PIC_Init();
+    LCD_Init();
+    
+    LCD_SetDDRamAddr(LINE_ONE);
+    LCD_WriteString("LCD Test v1.0");
     
     /* Set RA9 for output to drive LED1 */
     LATAbits.LATA9 = 0;
