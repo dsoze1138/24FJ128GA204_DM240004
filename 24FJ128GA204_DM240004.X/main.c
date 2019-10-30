@@ -175,7 +175,7 @@ void PIC_Init(void)
  */
 void delay_us(unsigned short delay)
 {
-    if ((delay * (FCY/1000000ul) > 16383ul))
+    if (delay > (uint16_t)(16383.0 / (FCY/1E6)))
     {
         asm("   repeat  #16383\n"
             "   clrwdt        \n"
