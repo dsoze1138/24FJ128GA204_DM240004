@@ -211,6 +211,7 @@ void delay_ms(unsigned long delay)
  */
 int main(void) 
 {
+    uint16_t Count;
     /*
      * Application initialization
      */
@@ -218,12 +219,13 @@ int main(void)
     LCD_Init();
     
     LCD_SetDDRamAddr(LINE_ONE);
-    LCD_WriteString("LCD Test v1.0");
+    LCD_WriteString("LCD Test v1.1");
     
     /* Set RA9 for output to drive LED1 */
     LATAbits.LATA9 = 0;
     TRISAbits.TRISA9 = 0;
     
+    Count = 0;
     /*
      * Application process loop
      */
@@ -231,6 +233,12 @@ int main(void)
     {
         LATAbits.LATA9 ^= 1;
         delay_ms(500);
+        Count++;
+        if(Count & 1)
+        {
+            LCD_SetDDRamAddr(LINE_ONE+15);
+            LCD_WriteData('0'+(Count>>1)%10);
+        }
     }
     return 0;
 }
