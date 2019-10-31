@@ -186,7 +186,7 @@ void delay_us(unsigned short delay)
     {
         asm("   repeat  %0    \n"
             "   clrwdt        \n"
-        :: "r" (delay*(FCY/1000000ul)));
+        :: "r" (delay*(uint16_t)(FCY/1000000ul)-1));
     }
 }
 /*
@@ -196,13 +196,13 @@ void delay_us(unsigned short delay)
  */
 void delay_ms(unsigned long delay)
 {
-    if(delay--)
+    if(delay)
     {
         asm("1: repeat  %0    \n"
             "   clrwdt        \n"
             "   sub  %1,#1    \n"
             "   subb %d1,#0   \n"
-            "   bra  c,1b     \n"
+            "   bra  nz,1b    \n"
         :: "r" (FCY/1000ul-6ul), "C" (delay));
     }
 }
