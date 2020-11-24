@@ -31,6 +31,7 @@
  * 
  * Setup the system oscillator for 32MHz using the internal FRC and the 4x PLL.
  * Turn on the 32.768KHz secondary oscillator.
+ * Use UART1 and printf to send a message as 9600 baud.
  * Flash LED1 on for 500 milliseconds then off for 500 milliseconds.
  * 
  */
@@ -304,7 +305,7 @@ int main(void)
     LATAbits.LATA9 = 0;
     TRISAbits.TRISA9 = 0;
 
-    printf("\r\nPIC24FJ128GA204 Start\r\n");
+    printf("\r\nPIC24FJ128GA204 built on " __DATE__ " at " __TIME__ " Start\r\n");
     /*
      * Application process loop
      */
