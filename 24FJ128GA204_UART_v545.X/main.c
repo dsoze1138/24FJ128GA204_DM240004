@@ -301,7 +301,7 @@ int main(void)
     PIC_Init();
     UART_Init();
     
-    /* Set RA9 for output to drive LED1 */
+    /* Set RA10 for output to drive LED2 */
     LATAbits.LATA10 = 0;
     TRISAbits.TRISA10 = 0;
 
