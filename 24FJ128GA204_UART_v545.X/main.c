@@ -208,7 +208,7 @@ void delay_ms(unsigned long delay)
 /*
  * Initialize the UART
  */
-void UART_Init(void)
+void UART1_Init(void)
 {
 /**    
      Set the UART1 module to run at 9600 baud with RB6 as TX out and RB5 as RX in.
@@ -299,7 +299,7 @@ int main(void)
      * Application initialization
      */
     PIC_Init();
-    UART_Init();
+    UART1_Init();
     
     /* Set RA10 for output to drive LED2 */
     LATAbits.LATA10 = 0;
